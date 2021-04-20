@@ -17,7 +17,7 @@ gpu_enable = False
 
 #>>>>>>> Uncomment dit om videobestand te gebruiken
 
-capture = cv2.VideoCapture('video/video2.mp4')
+capture = cv2.VideoCapture('/Users/kevin/Documents/Technische Informatica HR/2020-2021/Project78/RTR-Project78-main/phidippides-code/camera_algorithm/video2.mp4')
 
 classNames = ['blauw', 'geel', 'oranje']
 
@@ -28,8 +28,8 @@ classNames = ['blauw', 'geel', 'oranje']
 
 #>>>>>> Gebruikte weights model
 
-modelConfiguration = 'weights/3cones.cfg'
-modelWeights = 'weights/3cones_last3.weights'
+modelConfiguration = '/Users/kevin/Documents/Technische Informatica HR/2020-2021/Project78/RTR-Project78-main/phidippides-code/camera_algorithm/3cones.cfg'
+modelWeights = '/Users/kevin/Documents/Technische Informatica HR/2020-2021/Project78/RTR-Project78-main/phidippides-code/camera_algorithm/3cones_last3.weights'
 
 
 #>>>>>> Zet de weights model in de neural network
@@ -75,17 +75,17 @@ def findObjects(outputs, img):
         #>>>>>>> Maakt blauwe rechthoek als blauwe pylon wordt gedetecteerd
         if (classIds[i] == 0):
             cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
-            cv2.putText(img, f'{classNames[classIds[i]]}', (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+            cv2.putText(img, f'({x + 0.5 * w}, {y + h})', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
 
         #>>>>>>> Maakt gele rechthoek als gele pylon wordt gedetecteerd
         elif (classIds[i] == 1):
             cv2.rectangle(img, (x, y), (x + w, y + h), (120, 255, 255), 2)
-            cv2.putText(img, f'{classNames[classIds[i]]}', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (120, 255, 255), 2)
+            cv2.putText(img, f'({x + 0.5 * w}, {y + h})', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (120, 255, 255), 2)
 
         #>>>>>>> Maakt rode rechthoek als oranje pylon wordt gedetecteerd
         elif (classIds[i] == 2):
             cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
-            cv2.putText(img, f'{classNames[classIds[i]]}', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+            cv2.putText(img, f'({x + 0.5 * w}, {y + h})', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
 
 frame_time = 0
