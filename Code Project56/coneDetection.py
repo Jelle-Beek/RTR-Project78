@@ -17,7 +17,11 @@ gpu_enable = False
 
 #>>>>>>> Uncomment dit om videobestand te gebruiken
 
-capture = cv2.VideoCapture('/Users/kevin/Documents/Technische Informatica HR/2020-2021/Project78/RTR-Project78-main/phidippides-code/camera_algorithm/video2.mp4')
+#Pad Annelot
+capture = cv2.VideoCapture('/Users/annelotjanssen/Desktop/projectShit/video/video2.mp4')
+
+# Pad Kevin 
+#capture = cv2.VideoCapture('/Users/kevin/Documents/Technische Informatica HR/2020-2021/Project78/RTR-Project78-main/phidippides-code/camera_algorithm/video2.mp4')
 
 classNames = ['blauw', 'geel', 'oranje']
 
@@ -28,9 +32,13 @@ classNames = ['blauw', 'geel', 'oranje']
 
 #>>>>>> Gebruikte weights model
 
-modelConfiguration = '/Users/kevin/Documents/Technische Informatica HR/2020-2021/Project78/RTR-Project78-main/phidippides-code/camera_algorithm/3cones.cfg'
-modelWeights = '/Users/kevin/Documents/Technische Informatica HR/2020-2021/Project78/RTR-Project78-main/phidippides-code/camera_algorithm/3cones_last3.weights'
+# Pad Annelot 
+modelConfiguration = '/Users/annelotjanssen/Desktop/projectShit/weights/3cones.cfg'
+modelWeights = '/Users/annelotjanssen/Desktop/projectShit/weights/3cones_last3.weights'
 
+# Pad Kevin
+# modelConfiguration = '/Users/kevin/Documents/Technische Informatica HR/2020-2021/Project78/RTR-Project78-main/phidippides-code/camera_algorithm/3cones.cfg'
+# modelWeights = '/Users/kevin/Documents/Technische Informatica HR/2020-2021/Project78/RTR-Project78-main/phidippides-code/camera_algorithm/3cones_last3.weights'
 
 #>>>>>> Zet de weights model in de neural network
 net = cv2.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
@@ -48,9 +56,8 @@ def findObjects(outputs, img):
     bbox = []
     classIds = []
     confidence = []
-    confidenceThreshold = 0.7
+    confidenceThreshold = 0.5
     nmsThreshold = 0.2
-
 
     for output in outputs:
         for det in output:
@@ -66,11 +73,20 @@ def findObjects(outputs, img):
                 confidence.append(float(confidenceScore))
 
     indices = cv2.dnn.NMSBoxes(bbox, confidence, confidenceThreshold, nmsThreshold)
+    
+    leftCones = []
+    rightCones = []
 
     for i in indices:
         i = i[0]
         box = bbox[i]
         x, y, w, h = box[0], box[1], box[2], box[3]
+
+        #>>>>>>>>>>>>> maakt een verschill tussen linker pionnen en rechter pionnen
+        if (x + 0.5 * w < 640) :
+            leftCones.append((x + 0.5 * w, y+h))
+        else :
+            rightCones.append((x + 0.5 * w, y+h))
 
         #>>>>>>> Maakt blauwe rechthoek als blauwe pylon wordt gedetecteerd
         if (classIds[i] == 0):
@@ -86,6 +102,39 @@ def findObjects(outputs, img):
         elif (classIds[i] == 2):
             cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
             cv2.putText(img, f'({x + 0.5 * w}, {y + h})', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        
+        calculatePath(leftCones, rightCones, img)
+
+def calculatePath(leftCones, rightCones, img) :
+    # Obtain road border coordinates
+    bottomFirst = ()
+    bottomSecond = ()
+    topFirst = ()
+    topSecond = ()
+    if (len(leftCones) > 0  and len(rightCones) > 0):
+        for cone in leftCones:
+            # print(not (bottomFirst))
+            if (not bottomFirst or cone[1] > bottomFirst[1]):
+                bottomFirst = cone
+            if (topFirst == () or (cone[1] < bottomFirst[1] and cone[1] > topFirst[1])):
+                topFirst = cone
+        for cone in rightCones:
+            if (bottomSecond == () or cone[1] > bottomSecond[1]):
+                bottomSecond = cone
+            if (topSecond == () or (cone[1] < bottomSecond[1] and cone[1] > topSecond[1])):
+                topSecond = cone
+
+        leftRoadBorder = (bottomFirst, topFirst)
+        rightRoadBorder = (bottomSecond, topSecond)
+    
+        # calculate center top & bottom of road
+        bottomMiddle = (int((bottomFirst[0] + bottomSecond[0]) / 2),int((bottomFirst[1] + bottomSecond[1]) / 2))
+        topMiddle = (int((topFirst[0] + topSecond[0]) / 2),int((topFirst[1] + topSecond[1]) / 2))
+        middleRoad = (bottomMiddle, topMiddle)
+        middleX = (topFirst[0] + topSecond[0])/2
+        middleY = (topFirst[1] + topSecond[1])/2
+        
+        cv2.line(img, middleRoad[0], middleRoad[1], (255, 0, 0), 20)
 
 
 frame_time = 0
@@ -117,5 +166,13 @@ while True:
     cv2.imshow('image', image)
 
     #>>>>> Druk 'q' om het programma af te sluiten
-    if cv2.waitKey(1) == ord('q'):
+    key = cv2.waitKey(1)
+    if key == ord('q'):
         break
+    #>>>>> Druk op spatie om het programma te pauzeren
+    if key == ord(' ') :
+        key = cv2.waitKey(0)
+        if key == ord(' '):
+            key = cv2.waitKey(1)
+
+        
