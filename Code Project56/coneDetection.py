@@ -102,30 +102,33 @@ def findObjects(outputs, img):
         elif (classIds[i] == 2):
             cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
             cv2.putText(img, f'({x + 0.5 * w}, {y + h})', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-        
-        calculatePath(leftCones, rightCones, img)
+    calculatePath(leftCones, rightCones, img)
 
 def calculatePath(leftCones, rightCones, img) :
     # Obtain road border coordinates
-    bottomFirst = ()
-    bottomSecond = ()
-    topFirst = ()
-    topSecond = ()
+    bottomFirst = (0,0)
+    bottomSecond = (0,0)
+    topFirst = (0,0)
+    topSecond = (0,0)
     if (len(leftCones) > 0  and len(rightCones) > 0):
         for cone in leftCones:
             # print(not (bottomFirst))
-            if (not bottomFirst or cone[1] > bottomFirst[1]):
+            if (cone[1] > bottomFirst[1]):
                 bottomFirst = cone
-            if (topFirst == () or (cone[1] < bottomFirst[1] and cone[1] > topFirst[1])):
+            if (cone[1] < bottomFirst[1] and cone[1] > topFirst[1]):
                 topFirst = cone
         for cone in rightCones:
-            if (bottomSecond == () or cone[1] > bottomSecond[1]):
+            if (cone[1] > bottomSecond[1]):
                 bottomSecond = cone
-            if (topSecond == () or (cone[1] < bottomSecond[1] and cone[1] > topSecond[1])):
+            if (cone[1] < bottomSecond[1] and cone[1] > topSecond[1]):
                 topSecond = cone
 
         leftRoadBorder = (bottomFirst, topFirst)
         rightRoadBorder = (bottomSecond, topSecond)
+        bottomFirst = (int(bottomFirst[0]), int(bottomFirst[1]))
+        bottomSecond = (int(bottomSecond[0]), int(bottomSecond[1]))
+        cv2.line(img, bottomFirst, bottomSecond, (0,0,255), 3)
+        cv2.line(img, bottomFirst, bottomSecond, (0,0,255), 3)
     
         # calculate center top & bottom of road
         bottomMiddle = (int((bottomFirst[0] + bottomSecond[0]) / 2),int((bottomFirst[1] + bottomSecond[1]) / 2))
@@ -134,7 +137,11 @@ def calculatePath(leftCones, rightCones, img) :
         middleX = (topFirst[0] + topSecond[0])/2
         middleY = (topFirst[1] + topSecond[1])/2
         
-        cv2.line(img, middleRoad[0], middleRoad[1], (255, 0, 0), 20)
+        print(bottomFirst, bottomSecond, topFirst, topSecond)
+        if(bottomFirst[0] == topFirst[0] or bottomSecond[0] == topSecond[0] or topFirst == (0,0) or topSecond == (0,0)):
+            cv2.line(img, middleRoad[0], middleRoad[0], (255, 0, 0), 20)
+        else:
+            cv2.line(img, middleRoad[0], middleRoad[1], (255, 0, 0), 20)
 
 
 frame_time = 0
@@ -166,13 +173,15 @@ while True:
     cv2.imshow('image', image)
 
     #>>>>> Druk 'q' om het programma af te sluiten
-    key = cv2.waitKey(1)
+    key = cv2.waitKey(0)
     if key == ord('q'):
         break
     #>>>>> Druk op spatie om het programma te pauzeren
-    if key == ord(' ') :
-        key = cv2.waitKey(0)
-        if key == ord(' '):
-            key = cv2.waitKey(1)
-
+    #if key == ord(' ') :
+    #    key = cv2.waitKey(0)
+    #    if key == cv2.waitKey(0) and key == ord('q') :
+    #        break
+    #    if key == ord(' '):
+    #        key = cv2.waitKey(1)
+    key = cv2.waitKey(0)    
         
