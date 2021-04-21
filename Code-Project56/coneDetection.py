@@ -46,7 +46,7 @@ def findObjects(outputs, img):
     bbox = []
     classIds = []
     confidence = []
-    confidenceThreshold = 0.4
+    confidenceThreshold = 0.6
     nmsThreshold = 0.2
 
     for output in outputs:
@@ -122,20 +122,28 @@ def calculatePath(leftCones, rightCones, img) :
         middleX = (upperLeft[0] + upperRight[0])/2
         middleY = (upperLeft[1] + upperRight[1])/2
         
+        lowerRight = (int(lowerRight[0]), int(lowerRight[1]))
+        upperRight = (int(upperRight[0]), int(upperRight[1]))
+        lowerLeft = (int(lowerLeft[0]), int(lowerLeft[1]))
+        upperLeft = (int(upperLeft[0]), int(upperLeft[1]))
+        
         if(lowerLeft != (0,0) and upperLeft != (0,0)):
-            lowerLeft = (int(lowerLeft[0]), int(lowerLeft[1]))
-            upperLeft = (int(upperLeft[0]), int(upperLeft[1]))
             cv2.line(img, lowerLeft, upperLeft, (0,0,255), 3)
         if(lowerRight != (0,0) and upperRight != (0,0)):
-            lowerRight = (int(lowerRight[0]), int(lowerRight[1]))
-            upperRight = (int(upperRight[0]), int(upperRight[1]))
             cv2.line(img, lowerRight, upperRight, (0,0,255), 3)
+            
+        if(lowerLeft != (0,0) and lowerRight != (0,0)):
+            cv2.line(img, lowerLeft, lowerRight, (250,0,255), 2)
+        if(upperLeft != (0,0) and upperRight != (0,0)):
+            cv2.line(img, upperLeft, upperRight, (250,0,255), 2)
         
         #print(lowerLeft, lowerRight, upperLeft, upperRight)
         if(lowerLeft[0] == upperLeft[0] or lowerRight[0] == upperRight[0] or upperLeft == (0,0) or upperRight == (0,0)):
-            cv2.line(img, middleRoad[0], middleRoad[0], (255, 0, 0), 20)
+            cv2.circle(img, middleRoad[0], 10, (55,255,0), -1)
         else:
-            cv2.line(img, middleRoad[0], middleRoad[1], (255, 0, 0), 20)
+            cv2.circle(img, middleRoad[0], 10, (55,255,0), -1)
+            cv2.circle(img, middleRoad[1], 10, (55,255,0), -1)
+            cv2.line(img, middleRoad[0], middleRoad[1], (55,255,0), 8)
 
 
 frame_time = 0
