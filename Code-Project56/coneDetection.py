@@ -46,7 +46,7 @@ def findObjects(outputs, img):
     bbox = []
     classIds = []
     confidence = []
-    confidenceThreshold = 0.4
+    confidenceThreshold = 0.5
     nmsThreshold = 0.2
 
     for output in outputs:
@@ -88,6 +88,7 @@ def findObjects(outputs, img):
         elif (classIds[i] == 2):
             cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
             cv2.putText(img, f'({x + 0.5 * w}, {y + h})', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    
     calculatePath(leftCones, rightCones, img)
 
 def calculatePath(leftCones, rightCones, img) :
@@ -97,17 +98,23 @@ def calculatePath(leftCones, rightCones, img) :
     upperLeft = (0,0)
     upperRight = (0,0)
     if (len(leftCones) > 0  and len(rightCones) > 0):
+        print("-")
         for cone in leftCones:
+            # print(lowerLeft, upperLeft)
+            print(cone)
             # print(not (lowerLeft))
             if (cone[1] > lowerLeft[1]):
+                upperLeft = lowerLeft
                 lowerLeft = cone
-            if (cone[1] < lowerLeft[1] and cone[1] > upperLeft[1]):
-                upperLeft = cone
+            elif (cone[1] > upperLeft[1] or upperLeft == (0,0)):
+                upperLeft = cone 
+
         for cone in rightCones:
             if (cone[1] > lowerRight[1]):
+                upperRight = lowerRight
                 lowerRight = cone
-            if (cone[1] < lowerRight[1] and cone[1] > upperRight[1]):
-                upperRight = cone
+            elif (upperRight == (0,0)):
+                upperRight = cone    
 
         leftRoadBorder = (lowerLeft, upperLeft)
         rightRoadBorder = (lowerRight, upperRight)
@@ -128,7 +135,8 @@ def calculatePath(leftCones, rightCones, img) :
             upperRight = (int(upperRight[0]), int(upperRight[1]))
             cv2.line(img, lowerRight, upperRight, (0,0,255), 3)
         
-        print(lowerLeft, lowerRight, upperLeft, upperRight)
+        # print(lowerLeft, lowerRight, upperLeft, upperRight)
+
         if(lowerLeft[0] == upperLeft[0] or lowerRight[0] == upperRight[0] or upperLeft == (0,0) or upperRight == (0,0)):
             cv2.line(img, middleRoad[0], middleRoad[0], (255, 0, 0), 20)
         else:
