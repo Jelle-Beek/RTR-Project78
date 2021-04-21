@@ -72,21 +72,17 @@ def findObjects(outputs, img):
         box = bbox[i]
         x, y, w, h = box[0], box[1], box[2], box[3]
 
-        #>>>>>>>>>>>>> maakt een verschill tussen linker pionnen en rechter pionnen
-        if (x + 0.5 * w < 640) :
-            leftCones.append((x + 0.5 * w, y+h))
-        else :
-            rightCones.append((x + 0.5 * w, y+h))
-
         #>>>>>>> Maakt blauwe rechthoek als blauwe pylon wordt gedetecteerd
         if (classIds[i] == 0):
             cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
             cv2.putText(img, f'({x + 0.5 * w}, {y + h})', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+            leftCones.append((x + 0.5 * w, y+h))
 
         #>>>>>>> Maakt gele rechthoek als gele pylon wordt gedetecteerd
         elif (classIds[i] == 1):
             cv2.rectangle(img, (x, y), (x + w, y + h), (120, 255, 255), 2)
             cv2.putText(img, f'({x + 0.5 * w}, {y + h})', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (120, 255, 255), 2)
+            rightCones.append((x + 0.5 * w, y+h))
 
         #>>>>>>> Maakt rode rechthoek als oranje pylon wordt gedetecteerd
         elif (classIds[i] == 2):
@@ -96,42 +92,52 @@ def findObjects(outputs, img):
 
 def calculatePath(leftCones, rightCones, img) :
     # Obtain road border coordinates
-    bottomFirst = (0,0)
-    bottomSecond = (0,0)
-    topFirst = (0,0)
-    topSecond = (0,0)
+    lowerLeft = (0,0)
+    lowerRight = (0,0)
+    upperLeft = (0,0)
+    upperRight = (0,0)
     if (len(leftCones) > 0  and len(rightCones) > 0):
         for cone in leftCones:
-            # print(not (bottomFirst))
-            if (cone[1] > bottomFirst[1]):
-                bottomFirst = cone
-            if (cone[1] < bottomFirst[1] and cone[1] > topFirst[1]):
-                topFirst = cone
+            # print(not (lowerLeft))
+            if (cone[1] > lowerLeft[1]):
+                lowerLeft = cone
+            if (cone[1] < lowerLeft[1] and cone[1] > upperLeft[1]):
+                upperLeft = cone
         for cone in rightCones:
-            if (cone[1] > bottomSecond[1]):
-                bottomSecond = cone
-            if (cone[1] < bottomSecond[1] and cone[1] > topSecond[1]):
-                topSecond = cone
+            if (cone[1] > lowerRight[1]):
+                lowerRight = cone
+            if (cone[1] < lowerRight[1] and cone[1] > upperRight[1]):
+                upperRight = cone
 
-        leftRoadBorder = (bottomFirst, topFirst)
-        rightRoadBorder = (bottomSecond, topSecond)
-        bottomFirst = (int(bottomFirst[0]), int(bottomFirst[1]))
-        bottomSecond = (int(bottomSecond[0]), int(bottomSecond[1]))
-        cv2.line(img, bottomFirst, bottomSecond, (0,0,255), 3)
-        cv2.line(img, bottomFirst, bottomSecond, (0,0,255), 3)
+        leftRoadBorder = (lowerLeft, upperLeft)
+        rightRoadBorder = (lowerRight, upperRight)
     
         # calculate center top & bottom of road
-        bottomMiddle = (int((bottomFirst[0] + bottomSecond[0]) / 2),int((bottomFirst[1] + bottomSecond[1]) / 2))
-        topMiddle = (int((topFirst[0] + topSecond[0]) / 2),int((topFirst[1] + topSecond[1]) / 2))
+        bottomMiddle = (int((lowerLeft[0] + lowerRight[0]) / 2),int((lowerLeft[1] + lowerRight[1]) / 2))
+        topMiddle = (int((upperLeft[0] + upperRight[0]) / 2),int((upperLeft[1] + upperRight[1]) / 2))
         middleRoad = (bottomMiddle, topMiddle)
-        middleX = (topFirst[0] + topSecond[0])/2
-        middleY = (topFirst[1] + topSecond[1])/2
+        middleX = (upperLeft[0] + upperRight[0])/2
+        middleY = (upperLeft[1] + upperRight[1])/2
         
-        print(bottomFirst, bottomSecond, topFirst, topSecond)
-        if(bottomFirst[0] == topFirst[0] or bottomSecond[0] == topSecond[0] or topFirst == (0,0) or topSecond == (0,0)):
-            cv2.line(img, middleRoad[0], middleRoad[0], (255, 0, 0), 20)
-        else:
-            cv2.line(img, middleRoad[0], middleRoad[1], (255, 0, 0), 20)
+        if(lowerLeft != (0,0) and upperLeft != (0,0)):
+            lowerLeft = (int(lowerLeft[0]), int(lowerLeft[1]))
+            lowerRight = (int(lowerRight[0]), int(lowerRight[1]))
+            upperLeft = (int(upperLeft[0]), int(upperLeft[1]))
+            upperRight = (int(upperRight[0]), int(upperRight[1]))
+            cv2.line(img, lowerLeft, upperLeft, (0,0,255), 3)
+            cv2.line(img, lowerRight, upperRight, (0,0,255), 3)
+        
+        print(lowerLeft, lowerRight, upperLeft, upperRight)
+#        if(lowerLeft[0] == upperLeft[0] or lowerRight[0] == upperRight[0] or upperLeft == (0,0) or upperRight == (0,0)):
+#            cv2.line(img, middleRoad[0], middleRoad[0], (255, 0, 0), 20)
+#        else:
+#            cv2.line(img, middleRoad[0], middleRoad[1], (255, 0, 0), 20)
+#            lowerLeft = (int(lowerLeft[0]), int(lowerLeft[1]))
+#            lowerRight = (int(lowerRight[0]), int(lowerRight[1]))
+#            upperLeft = (int(upperLeft[0]), int(upperLeft[1]))
+#            upperRight = (int(upperRight[0]), int(upperRight[1]))
+#            cv2.line(img, lowerLeft, upperLeft, (0,0,255), 3)
+#            cv2.line(img, lowerRight, upperRight, (0,0,255), 3)
 
 
 frame_time = 0
@@ -161,17 +167,9 @@ while True:
     cv2.putText(image, fps, (7, 70), font, 3, (100, 255, 0), 3, cv2.LINE_AA)
 
     cv2.imshow('image', image)
-
-    #>>>>> Druk 'q' om het programma af te sluiten
     key = cv2.waitKey(0)
+    while key not in [ord('q'), ord('k')]:
+        key = cv2.waitKey(0)
+    #>>>>> Druk 'q' om het programma af te sluiten
     if key == ord('q'):
         break
-    #>>>>> Druk op spatie om het programma te pauzeren
-    #if key == ord(' ') :
-    #    key = cv2.waitKey(0)
-    #    if key == cv2.waitKey(0) and key == ord('q') :
-    #        break
-    #    if key == ord(' '):
-    #        key = cv2.waitKey(1)
-    key = cv2.waitKey(0)    
-        
