@@ -16,12 +16,7 @@ gpu_enable = False
 # capture = cv2.VideoCapture(0)
 
 #>>>>>>> Uncomment dit om videobestand te gebruiken
-
-#Pad Annelot
-capture = cv2.VideoCapture('/Users/annelotjanssen/Desktop/projectShit/video/video2.mp4')
-
-# Pad Kevin 
-#capture = cv2.VideoCapture('/Users/kevin/Documents/Technische Informatica HR/2020-2021/Project78/RTR-Project78-main/phidippides-code/camera_algorithm/video2.mp4')
+capture = cv2.VideoCapture('./Bronnen/video/video3.mp4')
 
 classNames = ['blauw', 'geel', 'oranje']
 
@@ -32,13 +27,8 @@ classNames = ['blauw', 'geel', 'oranje']
 
 #>>>>>> Gebruikte weights model
 
-# Pad Annelot 
-modelConfiguration = '/Users/annelotjanssen/Desktop/projectShit/weights/3cones.cfg'
-modelWeights = '/Users/annelotjanssen/Desktop/projectShit/weights/3cones_last3.weights'
-
-# Pad Kevin
-# modelConfiguration = '/Users/kevin/Documents/Technische Informatica HR/2020-2021/Project78/RTR-Project78-main/phidippides-code/camera_algorithm/3cones.cfg'
-# modelWeights = '/Users/kevin/Documents/Technische Informatica HR/2020-2021/Project78/RTR-Project78-main/phidippides-code/camera_algorithm/3cones_last3.weights'
+modelConfiguration = './Bronnen/weights/3cones.cfg'
+modelWeights = './Bronnen/weights/3cones_last3.weights'
 
 #>>>>>> Zet de weights model in de neural network
 net = cv2.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
