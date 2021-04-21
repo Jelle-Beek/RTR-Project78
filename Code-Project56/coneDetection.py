@@ -46,7 +46,7 @@ def findObjects(outputs, img):
     bbox = []
     classIds = []
     confidence = []
-    confidenceThreshold = 0.5
+    confidenceThreshold = 0.4
     nmsThreshold = 0.2
 
     for output in outputs:
@@ -121,23 +121,18 @@ def calculatePath(leftCones, rightCones, img) :
         
         if(lowerLeft != (0,0) and upperLeft != (0,0)):
             lowerLeft = (int(lowerLeft[0]), int(lowerLeft[1]))
-            lowerRight = (int(lowerRight[0]), int(lowerRight[1]))
             upperLeft = (int(upperLeft[0]), int(upperLeft[1]))
-            upperRight = (int(upperRight[0]), int(upperRight[1]))
             cv2.line(img, lowerLeft, upperLeft, (0,0,255), 3)
+        if(lowerRight != (0,0) and upperRight != (0,0)):
+            lowerRight = (int(lowerRight[0]), int(lowerRight[1]))
+            upperRight = (int(upperRight[0]), int(upperRight[1]))
             cv2.line(img, lowerRight, upperRight, (0,0,255), 3)
         
         print(lowerLeft, lowerRight, upperLeft, upperRight)
-#        if(lowerLeft[0] == upperLeft[0] or lowerRight[0] == upperRight[0] or upperLeft == (0,0) or upperRight == (0,0)):
-#            cv2.line(img, middleRoad[0], middleRoad[0], (255, 0, 0), 20)
-#        else:
-#            cv2.line(img, middleRoad[0], middleRoad[1], (255, 0, 0), 20)
-#            lowerLeft = (int(lowerLeft[0]), int(lowerLeft[1]))
-#            lowerRight = (int(lowerRight[0]), int(lowerRight[1]))
-#            upperLeft = (int(upperLeft[0]), int(upperLeft[1]))
-#            upperRight = (int(upperRight[0]), int(upperRight[1]))
-#            cv2.line(img, lowerLeft, upperLeft, (0,0,255), 3)
-#            cv2.line(img, lowerRight, upperRight, (0,0,255), 3)
+        if(lowerLeft[0] == upperLeft[0] or lowerRight[0] == upperRight[0] or upperLeft == (0,0) or upperRight == (0,0)):
+            cv2.line(img, middleRoad[0], middleRoad[0], (255, 0, 0), 20)
+        else:
+            cv2.line(img, middleRoad[0], middleRoad[1], (255, 0, 0), 20)
 
 
 frame_time = 0
@@ -168,7 +163,7 @@ while True:
 
     cv2.imshow('image', image)
     key = cv2.waitKey(0)
-    while key not in [ord('q'), ord('k')]:
+    while key not in [ord('q'), ord('f')]:
         key = cv2.waitKey(0)
     #>>>>> Druk 'q' om het programma af te sluiten
     if key == ord('q'):
