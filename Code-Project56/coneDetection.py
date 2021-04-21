@@ -98,16 +98,19 @@ def calculatePath(leftCones, rightCones, img) :
     upperRight = (0,0)
     if (len(leftCones) > 0  and len(rightCones) > 0):
         for cone in leftCones:
-            # print(not (lowerLeft))
             if (cone[1] > lowerLeft[1]):
+                upperLeft = lowerLeft
                 lowerLeft = cone
-            if (cone[1] < lowerLeft[1] and cone[1] > upperLeft[1]):
+            elif(cone[1] > upperLeft[1] or upperLeft == (0,0)):
                 upperLeft = cone
+                
         for cone in rightCones:
             if (cone[1] > lowerRight[1]):
+                upperRight = lowerRight
                 lowerRight = cone
-            if (cone[1] < lowerRight[1] and cone[1] > upperRight[1]):
+            elif(cone[1] > upperRight[1] or upperRight == (0,0)):
                 upperRight = cone
+
 
         leftRoadBorder = (lowerLeft, upperLeft)
         rightRoadBorder = (lowerRight, upperRight)
@@ -128,7 +131,7 @@ def calculatePath(leftCones, rightCones, img) :
             upperRight = (int(upperRight[0]), int(upperRight[1]))
             cv2.line(img, lowerRight, upperRight, (0,0,255), 3)
         
-        print(lowerLeft, lowerRight, upperLeft, upperRight)
+        #print(lowerLeft, lowerRight, upperLeft, upperRight)
         if(lowerLeft[0] == upperLeft[0] or lowerRight[0] == upperRight[0] or upperLeft == (0,0) or upperRight == (0,0)):
             cv2.line(img, middleRoad[0], middleRoad[0], (255, 0, 0), 20)
         else:
