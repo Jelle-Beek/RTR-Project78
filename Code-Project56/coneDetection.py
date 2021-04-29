@@ -96,6 +96,14 @@ def calculatePath(leftCones, rightCones, img) :
     lowerRight = (0,0)
     upperLeft = (0,0)
     upperRight = (0,0)
+    carPoint = (700, 550)
+    h, w, c = img.shape
+    screenLeft = (0, h)
+    screenRight = (w, h)
+    
+    # Draw static point for the car
+    cv2.circle(img, carPoint, 10, (0, 165, 255), -1)
+    
     if (len(leftCones) > 0  and len(rightCones) > 0):
         for cone in leftCones:
             if (cone[1] > lowerLeft[1]):
@@ -110,17 +118,15 @@ def calculatePath(leftCones, rightCones, img) :
                 lowerRight = cone
             elif(cone[1] > upperRight[1] or upperRight == (0,0)):
                 upperRight = cone
-
-
-        leftRoadBorder = (lowerLeft, upperLeft)
-        rightRoadBorder = (lowerRight, upperRight)
     
         # calculate center top & bottom of road
         bottomMiddle = (int((lowerLeft[0] + lowerRight[0]) / 2),int((lowerLeft[1] + lowerRight[1]) / 2))
         topMiddle = (int((upperLeft[0] + upperRight[0]) / 2),int((upperLeft[1] + upperRight[1]) / 2))
         middleRoad = (bottomMiddle, topMiddle)
-        middleX = (upperLeft[0] + upperRight[0])/2
-        middleY = (upperLeft[1] + upperRight[1])/2
+        
+        centerX = topMiddle[0] + ((bottomMiddle[0] - topMiddle[0]) / 2)
+        centerY = topMiddle[1] + ((bottomMiddle[1] - topMiddle[1]) / 2)
+        center = (int(centerX), int(centerY))
         
         lowerRight = (int(lowerRight[0]), int(lowerRight[1]))
         upperRight = (int(upperRight[0]), int(upperRight[1]))
@@ -144,7 +150,12 @@ def calculatePath(leftCones, rightCones, img) :
             cv2.circle(img, middleRoad[0], 10, (55,255,0), -1)
             cv2.circle(img, middleRoad[1], 10, (55,255,0), -1)
             cv2.line(img, middleRoad[0], middleRoad[1], (55,255,0), 8)
-
+            
+            cv2.circle(img, (center[0],center[1]), 10, (0, 165, 255), -1)
+            cv2.line(img, (center[0],center[1]), carPoint, (0, 165, 255), 8)
+            
+            cv2.line(img, screenLeft, lowerLeft, (0,0,255), 3)
+            cv2.line(img, screenRight, lowerRight, (0,0,255), 3)
 
 frame_time = 0
 new_frame_time = 0
