@@ -6,19 +6,39 @@ const uint8_t *header;
 const uint8_t *data;
 const uint8_t *tail;
 
+uint16_t distances[360][16];
+int oldAngle;
+
+void parse_packet(uint8_t *packet) {
+	int angle = ((packet[2] << 8) | (packet[3])) / 100;
+	
+	if(angle < oldAngle) {
+		// put buffer in shared memory
+	}
+	
+	printf("ang:%3d   ", angle);
+	for(int i = 4; i < (4 + 16*3); i += 3) {
+		int cm = (data[i] << 8) | (data[i+1]);
+		distances[angle][(i-4)/3] = cm;
+		printf("d:%4d cm   ", cm);
+	}
+	printf("\n");
+}
+
 void got_packet(u_char *args, const struct pcap_pkthdr *packetheader, const u_char *packet) {
-	std::cout << "["<<0<<"]: ";
 	packet += 42;
 	header = packet;
 	data = packet + 42;
 	tail = packet + 1242;
-	for(int i = 0; i < 8; i++) {
-		printf("%02x ", data[i]);
+	
+	for(int i = 0; i < 12; i++) {
+		parse_packet((uint8_t*)(data) + i*100);
 	}
 	std::cout << std::endl;
 }
 
 void capturePackets_start() {
+	oldAngle = 0;
 	pcap_t *handle;
 	char dev[] = "enp3s0";
 	char errbuf[PCAP_ERRBUF_SIZE];
