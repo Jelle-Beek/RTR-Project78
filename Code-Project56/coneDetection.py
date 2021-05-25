@@ -3,6 +3,7 @@
 import cv2
 import time
 import numpy as np
+import math
 
 #>>>>>>> instellingen
 
@@ -16,24 +17,24 @@ gpu_enable = False
 # capture = cv2.VideoCapture(0)
 
 #>>>>>>> Uncomment dit om videobestand te gebruiken
-capture = cv2.VideoCapture('./Bronnen/video/video3.mp4')
+capture = cv2.VideoCapture('Code-Project56/Bronnen/video/video3.mp4')
 
 classNames = ['blauw', 'geel', 'oranje']
 
 #>>>>>>> Zelfgemaakte weights model
 
-#modelConfiguration = './Bronnen/weights/yolov3_testing.cfg'
-#modelWeights = './Bronnen/weights/yolov3_training_final.weights'
+# modelConfiguration = 'Code-Project56/Bronnen/weights/yolov3_testing.cfg'
+# modelWeights = 'Code-Project56/Bronnen/weights/yolov3_training_final.weights'
 
 #>>>>>> Gebruikte weights model
 
-modelConfiguration = './Bronnen/weights/3cones.cfg'
-modelWeights = './Bronnen/weights/3cones_last3.weights'
+modelConfiguration = 'Code-Project56/Bronnen/weights/3cones.cfg'
+modelWeights = 'Code-Project56/Bronnen/weights/3cones_last3.weights'
 
 #>>>>>> Weights model project 78
 
-#modelConfiguration = './Bronnen/weights/yolo_baseline.cfg'
-#modelWeights = './Bronnen/weights/test.weights'
+# modelConfiguration = 'Code-Project56/Bronnen/weights/test.cfg'
+# modelWeights = 'Code-Project56/Bronnen/weights/pretrained_yolo.weights'
 
 #>>>>>> Zet de weights model in de neural network
 net = cv2.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
@@ -105,11 +106,15 @@ def calculatePath(leftCones, rightCones, img) :
     h, w, c = img.shape
     screenLeft = (0, h)
     screenRight = (w, h)
+
+    dx = 0
+    dy = 1
     
     # Draw static point for the car
     cv2.circle(img, carPoint, 10, (0, 165, 255), -1)
     
     if (len(leftCones) > 0  and len(rightCones) > 0):
+        # Kijkt welke pion de onderste en een na onderste is
         for cone in leftCones:
             if (cone[1] > lowerLeft[1]):
                 upperLeft = lowerLeft
@@ -123,6 +128,11 @@ def calculatePath(leftCones, rightCones, img) :
                 lowerRight = cone
             elif(cone[1] > upperRight[1] or upperRight == (0,0)):
                 upperRight = cone
+
+        if upperLeft == lowerLeft:
+            upperLeft = (0,0)
+        if upperRight == lowerRight:
+            upperRight = (0,0)
     
         # calculate center top & bottom of road
         bottomMiddle = (int((lowerLeft[0] + lowerRight[0]) / 2),int((lowerLeft[1] + lowerRight[1]) / 2))
@@ -143,29 +153,36 @@ def calculatePath(leftCones, rightCones, img) :
         if(lowerRight != (0,0) and upperRight != (0,0)):
             cv2.line(img, lowerRight, upperRight, (0,0,255), 3)
             
+        # Checkt of er een eerste set pionnen
         if(lowerLeft != (0,0) and lowerRight != (0,0)):
             cv2.line(img, lowerLeft, lowerRight, (250,0,255), 2)
+            cv2.circle(img, middleRoad[0], 10, (55,255,0), -1)
+            cv2.line(img, screenLeft, lowerLeft, (0,0,255), 3)
+            cv2.line(img, screenRight, lowerRight, (0,0,255), 3)
+
+        # Checkt of er een tweede set pionnen
         if(upperLeft != (0,0) and upperRight != (0,0)):
             cv2.line(img, upperLeft, upperRight, (250,0,255), 2)
-        
-        #print(lowerLeft, lowerRight, upperLeft, upperRight)
-        if(lowerLeft[0] == upperLeft[0] or lowerRight[0] == upperRight[0] or upperLeft == (0,0) or upperRight == (0,0)):
-            cv2.circle(img, middleRoad[0], 10, (55,255,0), -1)
-        else:
-            cv2.circle(img, middleRoad[0], 10, (55,255,0), -1)
             cv2.circle(img, middleRoad[1], 10, (55,255,0), -1)
+
             cv2.line(img, middleRoad[0], middleRoad[1], (55,255,0), 8)
             
-            rc = (middleRoad[1][1] - middleRoad[0][1])/(middleRoad[1][0] - middleRoad[0][0])
-            alpha = n
+            # Bereken het verschil in x en y van de middenpunten
+            dx = middleRoad[1][0] - middleRoad[0][0]
+            dy = middleRoad[0][1] - middleRoad[1][1]
+
+
+            print(middleRoad)
+            print(dx, dy)
             
             #cv2.circle(img, (center[0],center[1]), 10, (0, 165, 255), -1)
             #cv2.line(img, (center[0],center[1]), carPoint, (0, 165, 255), 8)
             
             cv2.line(img, middleRoad[0], (middleRoad[0][0], 0), (55, 255, 0), 8)
+
+        alpha = math.atan(dx/dy)
+        alpha *= 180 / math.pi
             
-            cv2.line(img, screenLeft, lowerLeft, (0,0,255), 3)
-            cv2.line(img, screenRight, lowerRight, (0,0,255), 3)
 
 frame_time = 0
 new_frame_time = 0
