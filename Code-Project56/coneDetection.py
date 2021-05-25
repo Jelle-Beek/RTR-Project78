@@ -22,13 +22,18 @@ classNames = ['blauw', 'geel', 'oranje']
 
 #>>>>>>> Zelfgemaakte weights model
 
-# modelConfiguration = 'weights/yolov3_testing.cfg'
-# modelWeights = 'weights/yolov3_training_final.weights'
+#modelConfiguration = './Bronnen/weights/yolov3_testing.cfg'
+#modelWeights = './Bronnen/weights/yolov3_training_final.weights'
 
 #>>>>>> Gebruikte weights model
 
 modelConfiguration = './Bronnen/weights/3cones.cfg'
 modelWeights = './Bronnen/weights/3cones_last3.weights'
+
+#>>>>>> Weights model project 78
+
+#modelConfiguration = './Bronnen/weights/yolo_baseline.cfg'
+#modelWeights = './Bronnen/weights/test.weights'
 
 #>>>>>> Zet de weights model in de neural network
 net = cv2.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
@@ -151,8 +156,13 @@ def calculatePath(leftCones, rightCones, img) :
             cv2.circle(img, middleRoad[1], 10, (55,255,0), -1)
             cv2.line(img, middleRoad[0], middleRoad[1], (55,255,0), 8)
             
-            cv2.circle(img, (center[0],center[1]), 10, (0, 165, 255), -1)
-            cv2.line(img, (center[0],center[1]), carPoint, (0, 165, 255), 8)
+            rc = (middleRoad[1][1] - middleRoad[0][1])/(middleRoad[1][0] - middleRoad[0][0])
+            alpha = n
+            
+            #cv2.circle(img, (center[0],center[1]), 10, (0, 165, 255), -1)
+            #cv2.line(img, (center[0],center[1]), carPoint, (0, 165, 255), 8)
+            
+            cv2.line(img, middleRoad[0], (middleRoad[0][0], 0), (55, 255, 0), 8)
             
             cv2.line(img, screenLeft, lowerLeft, (0,0,255), 3)
             cv2.line(img, screenRight, lowerRight, (0,0,255), 3)
