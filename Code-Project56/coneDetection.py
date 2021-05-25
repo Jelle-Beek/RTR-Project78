@@ -97,11 +97,8 @@ def findObjects(outputs, img):
     calculatePath(leftCones, rightCones, img)
 
 def calculatePath(leftCones, rightCones, img) :
-    # Obtain road border coordinates
-    lowerLeft = (0,0)
-    lowerRight = (0,0)
-    upperLeft = (0,0)
-    upperRight = (0,0)
+    # Initialiseer variabeles
+    lowerLeft = lowerRight = upperLeft = upperRight = (0,0)
     carPoint = (700, 550)
     h, w, c = img.shape
     screenLeft = (0, h)
@@ -110,11 +107,11 @@ def calculatePath(leftCones, rightCones, img) :
     dx = 0
     dy = 1
     
-    # Draw static point for the car
+    # Tekent een punt in het midden van de auto (oranje) (verandert per auto)
     cv2.circle(img, carPoint, 10, (0, 165, 255), -1)
     
     if len(leftCones) > 0:
-        # Kijkt welke pion de onderste en een na onderste is
+        # Kijkt welke pion de onderste en een na onderste is van de linker pionnen
         for cone in leftCones:
             if (cone[1] > lowerLeft[1]):
                 upperLeft = lowerLeft
@@ -122,17 +119,22 @@ def calculatePath(leftCones, rightCones, img) :
             elif(cone[1] > upperLeft[1] or upperLeft == (0,0)):
                 upperLeft = cone
 
+        # Als er geen tweede pion is, reset de waarde hiervan
         if upperLeft == lowerLeft:
             upperLeft = (0,0)
 
+        # Typecast coordinaten van float naar int voor tekenen
         lowerLeft = (int(lowerLeft[0]), int(lowerLeft[1]))
         upperLeft = (int(upperLeft[0]), int(upperLeft[1]))
 
+        # Tekent lijn van eerste naar tweede pion (rood) als het kan
         if upperLeft != (0,0):
             cv2.line(img, lowerLeft, upperLeft, (0,0,255), 3)
 
+        # Tekent lijn van eerste pion naar onderkant van scherm (rood)
         cv2.line(img, screenLeft, lowerLeft, (0,0,255), 3)
 
+    # Doet precies hetzelfde als hierboven maar dan voor rechter pionnen
     if len(rightCones) > 0:
         for cone in rightCones:
             if (cone[1] > lowerRight[1]):
@@ -152,16 +154,13 @@ def calculatePath(leftCones, rightCones, img) :
 
         cv2.line(img, screenRight, lowerRight, (0,0,255), 3)
 
-    # calculate center top & bottom of road
+    # Berekent het midden van de pionnen sets
     bottomMiddle = ((lowerLeft[0] + lowerRight[0]) // 2, (lowerLeft[1] + lowerRight[1]) // 2)
     topMiddle = ((upperLeft[0] + upperRight[0]) // 2, (upperLeft[1] + upperRight[1]) // 2)
-    
-    centerX = topMiddle[0] + ((bottomMiddle[0] - topMiddle[0]) / 2)
-    centerY = topMiddle[1] + ((bottomMiddle[1] - topMiddle[1]) / 2)
-    center = (int(centerX), int(centerY))
         
-    # Checkt of er een tweede set pionnen
+    # Checkt of er twee sets van pionnen zijn
     if(upperLeft != (0,0) and upperRight != (0,0)):
+        # Tekent lijn tussen linker en rechter pionnen (roze) met punten in het midden (groen) en verbind de twee middenpunten (groen)
         cv2.line(img, lowerLeft, lowerRight, (250,0,255), 2)
         cv2.circle(img, bottomMiddle, 10, (55,255,0), -1)
 
@@ -174,23 +173,29 @@ def calculatePath(leftCones, rightCones, img) :
         dx = bottomMiddle[0] - topMiddle[0]
         dy = bottomMiddle[1] - topMiddle[1]
         
+        # Tekent de hulplijn van onderste middel punt naar de bovenkant van het scherm (oranje)
         cv2.line(img, bottomMiddle, (bottomMiddle[0], 0), (0, 165, 255), 3)
     
-    # Checkt of er een eerste set pionnen
+    # Checkt of 1 set pionnen is
     elif(lowerLeft != (0,0) and lowerRight != (0,0)):
+        # Tekent lijn tussen linker en rechter pion (roze) met een punt in het midden (groen)
         cv2.line(img, lowerLeft, lowerRight, (250,0,255), 2)
         cv2.circle(img, bottomMiddle, 10, (55,255,0), -1)
 
+        # Tekent een lijn van de auto naar het middenpunt (groen) en de hulplijn van de auto naar de bovenkant van het scherm (oranje)
         cv2.line(img, carPoint, bottomMiddle, (55,255,0), 8)
         cv2.line(img, carPoint, (carPoint[0], 0), (0, 165, 255), 3)
         
+        # Bereken het verschil in x en y van de middenpunten
         dx = carPoint[0] - bottomMiddle[0]
         dy = carPoint[1] - bottomMiddle[1]
 
-    alpha = math.atan(dx/dy)
-    alpha *= -180 / math.pi # -180 cuz 0,0 top left
-    print (alpha)
-            
+    # Berekent de stuurhoek voor de auto en print deze op het scherm
+    steeringAngle = math.atan(dx/dy)
+    steeringAngle *= -180 / math.pi # -180 omdat 0,0 de linkerbovenhoek van het scherm is
+    targetVelocity = ((90 - abs(steeringAngle)) / 90)
+    cv2.putText(img, f'(Stuurhoek: {round(steeringAngle,2)})', (carPoint[0]-80, carPoint[1]+30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    cv2.putText(img, f'(Snelheid: {round(targetVelocity*100,2)}%)', (carPoint[0]-65, carPoint[1]+50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
 frame_time = 0
 new_frame_time = 0
