@@ -113,7 +113,7 @@ def calculatePath(leftCones, rightCones, img) :
     # Draw static point for the car
     cv2.circle(img, carPoint, 10, (0, 165, 255), -1)
     
-    if (len(leftCones) > 0  and len(rightCones) > 0):
+    if len(leftCones) > 0:
         # Kijkt welke pion de onderste en een na onderste is
         for cone in leftCones:
             if (cone[1] > lowerLeft[1]):
@@ -121,7 +121,19 @@ def calculatePath(leftCones, rightCones, img) :
                 lowerLeft = cone
             elif(cone[1] > upperLeft[1] or upperLeft == (0,0)):
                 upperLeft = cone
-                
+
+        if upperLeft == lowerLeft:
+            upperLeft = (0,0)
+
+        lowerLeft = (int(lowerLeft[0]), int(lowerLeft[1]))
+        upperLeft = (int(upperLeft[0]), int(upperLeft[1]))
+
+        if upperLeft != (0,0):
+            cv2.line(img, lowerLeft, upperLeft, (0,0,255), 3)
+
+        cv2.line(img, screenLeft, lowerLeft, (0,0,255), 3)
+
+    if len(rightCones) > 0:
         for cone in rightCones:
             if (cone[1] > lowerRight[1]):
                 upperRight = lowerRight
@@ -129,59 +141,55 @@ def calculatePath(leftCones, rightCones, img) :
             elif(cone[1] > upperRight[1] or upperRight == (0,0)):
                 upperRight = cone
 
-        if upperLeft == lowerLeft:
-            upperLeft = (0,0)
         if upperRight == lowerRight:
             upperRight = (0,0)
-    
-        # calculate center top & bottom of road
-        bottomMiddle = (int((lowerLeft[0] + lowerRight[0]) / 2),int((lowerLeft[1] + lowerRight[1]) / 2))
-        topMiddle = (int((upperLeft[0] + upperRight[0]) / 2),int((upperLeft[1] + upperRight[1]) / 2))
-        middleRoad = (bottomMiddle, topMiddle)
-        
-        centerX = topMiddle[0] + ((bottomMiddle[0] - topMiddle[0]) / 2)
-        centerY = topMiddle[1] + ((bottomMiddle[1] - topMiddle[1]) / 2)
-        center = (int(centerX), int(centerY))
-        
+
         lowerRight = (int(lowerRight[0]), int(lowerRight[1]))
         upperRight = (int(upperRight[0]), int(upperRight[1]))
-        lowerLeft = (int(lowerLeft[0]), int(lowerLeft[1]))
-        upperLeft = (int(upperLeft[0]), int(upperLeft[1]))
-        
-        if(lowerLeft != (0,0) and upperLeft != (0,0)):
-            cv2.line(img, lowerLeft, upperLeft, (0,0,255), 3)
-        if(lowerRight != (0,0) and upperRight != (0,0)):
+
+        if upperRight != (0,0):
             cv2.line(img, lowerRight, upperRight, (0,0,255), 3)
-            
-        # Checkt of er een eerste set pionnen
-        if(lowerLeft != (0,0) and lowerRight != (0,0)):
-            cv2.line(img, lowerLeft, lowerRight, (250,0,255), 2)
-            cv2.circle(img, middleRoad[0], 10, (55,255,0), -1)
-            cv2.line(img, screenLeft, lowerLeft, (0,0,255), 3)
-            cv2.line(img, screenRight, lowerRight, (0,0,255), 3)
 
-        # Checkt of er een tweede set pionnen
-        if(upperLeft != (0,0) and upperRight != (0,0)):
-            cv2.line(img, upperLeft, upperRight, (250,0,255), 2)
-            cv2.circle(img, middleRoad[1], 10, (55,255,0), -1)
+        cv2.line(img, screenRight, lowerRight, (0,0,255), 3)
 
-            cv2.line(img, middleRoad[0], middleRoad[1], (55,255,0), 8)
-            
-            # Bereken het verschil in x en y van de middenpunten
-            dx = middleRoad[1][0] - middleRoad[0][0]
-            dy = middleRoad[0][1] - middleRoad[1][1]
+    # calculate center top & bottom of road
+    bottomMiddle = ((lowerLeft[0] + lowerRight[0]) // 2, (lowerLeft[1] + lowerRight[1]) // 2)
+    topMiddle = ((upperLeft[0] + upperRight[0]) // 2, (upperLeft[1] + upperRight[1]) // 2)
+    
+    centerX = topMiddle[0] + ((bottomMiddle[0] - topMiddle[0]) / 2)
+    centerY = topMiddle[1] + ((bottomMiddle[1] - topMiddle[1]) / 2)
+    center = (int(centerX), int(centerY))
+        
+    # Checkt of er een tweede set pionnen
+    if(upperLeft != (0,0) and upperRight != (0,0)):
+        cv2.line(img, lowerLeft, lowerRight, (250,0,255), 2)
+        cv2.circle(img, bottomMiddle, 10, (55,255,0), -1)
 
+        cv2.line(img, upperLeft, upperRight, (250,0,255), 2)
+        cv2.circle(img, topMiddle, 10, (55,255,0), -1)
 
-            print(middleRoad)
-            print(dx, dy)
-            
-            #cv2.circle(img, (center[0],center[1]), 10, (0, 165, 255), -1)
-            #cv2.line(img, (center[0],center[1]), carPoint, (0, 165, 255), 8)
-            
-            cv2.line(img, middleRoad[0], (middleRoad[0][0], 0), (55, 255, 0), 8)
+        cv2.line(img, bottomMiddle, topMiddle, (55,255,0), 8)
+        
+        # Bereken het verschil in x en y van de middenpunten
+        dx = bottomMiddle[0] - topMiddle[0]
+        dy = bottomMiddle[1] - topMiddle[1]
+        
+        cv2.line(img, bottomMiddle, (bottomMiddle[0], 0), (0, 165, 255), 3)
+    
+    # Checkt of er een eerste set pionnen
+    elif(lowerLeft != (0,0) and lowerRight != (0,0)):
+        cv2.line(img, lowerLeft, lowerRight, (250,0,255), 2)
+        cv2.circle(img, bottomMiddle, 10, (55,255,0), -1)
 
-        alpha = math.atan(dx/dy)
-        alpha *= 180 / math.pi
+        cv2.line(img, carPoint, bottomMiddle, (55,255,0), 8)
+        cv2.line(img, carPoint, (carPoint[0], 0), (0, 165, 255), 3)
+        
+        dx = carPoint[0] - bottomMiddle[0]
+        dy = carPoint[1] - bottomMiddle[1]
+
+    alpha = math.atan(dx/dy)
+    alpha *= -180 / math.pi # -180 cuz 0,0 top left
+    print (alpha)
             
 
 frame_time = 0
