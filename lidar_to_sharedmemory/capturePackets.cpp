@@ -1,5 +1,6 @@
 #include <pcap/pcap.h>
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 
 const uint8_t *header;
@@ -8,13 +9,48 @@ const uint8_t *tail;
 
 uint16_t distances[360][16];
 int oldAngle;
+int count;
+
+
+void createImage() {
+	int x = 360, y = 16;
+	char imgname[100];
+	sprintf(imgname, "images/image%04d.ppm", count);
+	std::ofstream image(imgname, std::ios::out);
+	image << "P3\n" << x << " " << y << "\n255\n";
+	//Camera cam;
+	for(int j = y-1; j >= 0; j--) {
+		for(int i = 0; i < x; i++) {
+			/*Vec3 col(0,0,0);
+			for(int s = 0; s < shadow_rays; s++) {
+				float u = float(i + rand_double()) / float(x);
+				float v = float(j + rand_double()) / float(y);
+				Ray r = cam.get_ray(u, v);
+				Vec3 p = r.point_at_line(2.0);
+				col += color(r, world, 0);
+			}
+			col /= float(shadow_rays);
+			col = Vec3(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));*/
+			int ir, ig, ib;
+			ir = ig = ib = distances[i][j] * 255 / 3000;//(255.99*100);
+			if(ir > 255) {ir = 255; ig = ib = 0;}
+			//int ig = int(255.99*10);
+			//int ib = int(255.99*200);
+			image << ir << " " << ig << " " << ib << "\n";
+		}
+	}
+	image.close();
+}
 
 void parse_packet(uint8_t *packet) {
 	int angle = ((packet[2] << 8) | (packet[3])) / 100;
 	
 	if(angle < oldAngle) {
-		// put buffer in shared memory
+		printf("New frame started\n");
+		createImage();
+		count++;
 	}
+	oldAngle = angle;
 	
 	printf("ang:%3d   ", angle);
 	for(int i = 4; i < (4 + 16*3); i += 3) {
@@ -22,6 +58,7 @@ void parse_packet(uint8_t *packet) {
 		distances[angle][(i-4)/3] = cm;
 		printf("d:%4d cm   ", cm);
 	}
+	
 	printf("\n");
 }
 
@@ -39,6 +76,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *packetheader, const u_ch
 
 void capturePackets_start() {
 	oldAngle = 0;
+	count = 0;
 	pcap_t *handle;
 	char dev[] = "enp3s0";
 	char errbuf[PCAP_ERRBUF_SIZE];
