@@ -135,3 +135,4 @@ Lidar-interface/libraries/rslidar_sdk/
 .DS_Store
 .vscode
 Code-Project56/Bronnen
+*.out
